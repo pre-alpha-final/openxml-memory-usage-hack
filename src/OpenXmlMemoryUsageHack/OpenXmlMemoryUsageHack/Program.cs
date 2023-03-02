@@ -11,7 +11,8 @@ internal class Program
 
     private static void Main(string[] args)
     {
-        StandardSave();
+        //StandardSave();
+        HackySave();
 
         Console.WriteLine("Done");
         Console.ReadKey();
@@ -72,6 +73,54 @@ internal class Program
         // Close the document.
         spreadsheetDocument.Close();
     }
+
+    private static void HackySave()
+    {
+        var fileName = @"hacky.xlsx";
+        var spreadsheetDocument = SpreadsheetDocument.Create(fileName, SpreadsheetDocumentType.Workbook);
+
+        // Add a WorkbookPart to the document.
+        var workbookpart = spreadsheetDocument.AddWorkbookPart();
+        workbookpart.Workbook = new Workbook();
+
+        // Add a WorksheetPart to the WorkbookPart.
+        var worksheetPart = workbookpart.AddNewPart<WorksheetPart>();
+        worksheetPart.Worksheet = new Worksheet(new SheetData());
+
+        // Add Sheets to the Workbook.
+        var sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new Sheets());
+
+        // Append a new worksheet and associate it with the workbook.
+        var sheet = new Sheet()
+        {
+            Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart),
+            SheetId = 1,
+            Name = "mySheet"
+        };
+
+        sheets.Append(sheet);
+        var worksheet = new Worksheet();
+        var sheetData = new SheetData();
+
+        uint rowIndex = 1;
+        foreach (var row in GetData())
+        {
+            var openXmlRowProxy = new RowProxy() { RowIndex = rowIndex++ };
+            for (var i = 0; i < CellCount; i++)
+            {
+                openXmlRowProxy.AppendCellValue(row[i]);
+            }
+            sheetData.Append(openXmlRowProxy);
+        }
+
+        worksheet.Append(sheetData);
+        worksheetPart.Worksheet = worksheet;
+        workbookpart.Workbook.Save();
+
+        // Close the document.
+        spreadsheetDocument.Close();
+    }
+
 
     // Return a string x string table filled with guids (to have some non repeating data)
     private static IEnumerable<List<string>> GetData()
