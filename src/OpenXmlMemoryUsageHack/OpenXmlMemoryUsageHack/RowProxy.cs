@@ -14,10 +14,7 @@ internal class RowProxy : Row
 
     public void AppendCellValue(string cellValue)
     {
-        if (cellValue != null)
-        {
-            _cellValues.Add(cellValue);
-        }
+        _cellValues.Add(cellValue);
     }
 
     private static List<OpenXmlElement> MapToCell(IEnumerable<string> cellValues)

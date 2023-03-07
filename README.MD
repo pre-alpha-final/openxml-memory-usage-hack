@@ -15,5 +15,9 @@ Seems like some heavy injection. Due to a lucky turn of events, no. We inherit f
 The code is based on the standard save example from OpenXML ([link](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.cellvalue?view=openxml-2.8.1 "link")) modified to save a table of strings. From there, it is just replacing `Row` with `RowProxy` and feeding it values for cells instead of `Cell` objects.
 <p align="center"><img src="/docs/compare_code.png" width="600"/></p>
 
-# More data types
-The base example works with strings for simplicity, but there is support for other data types on the `feature/support-more-data-types` branch.
+# Branches
+## feature/support-more-data-types
+The base example works with strings for simplicity, but there is support for other data types on this branch.
+
+## feature/custom-mapping
+This branch has the mapping function pulled out of the RowProxy so that it can be customized.
