@@ -42,6 +42,8 @@ internal class Program
     private static Row HackyRowGeneration(uint rowIndex, List<object> row)
     {
         var openXmlRow = new RowProxy() { RowIndex = rowIndex };
+        openXmlRow.MapToCellFunc = MapToCell;
+
         for (var i = 0; i < CellCount; i++)
         {
             openXmlRow.AppendCellValue(row[i]);
@@ -50,6 +52,30 @@ internal class Program
         Console.Write($"Row generation {rowIndex * 100 / RowCount} %");
 
         return openXmlRow;
+    }
+
+    private static Cell MapToCell(object cellValue)
+    {
+        switch (cellValue.GetType().Name)
+        {
+            case "String":
+                return new Cell { DataType = CellValues.String, CellValue = new CellValue((string)cellValue) };
+            case "Boolean":
+                return new Cell { DataType = CellValues.Boolean, CellValue = new CellValue((bool)cellValue) };
+            case "DateTime":
+                return new Cell { DataType = CellValues.Date, CellValue = new CellValue((DateTime)cellValue), StyleIndex = 1 };
+            case "Int32":
+                return new Cell { DataType = CellValues.Number, CellValue = new CellValue((int)cellValue) };
+            case "Single":
+                return new Cell { DataType = CellValues.Number, CellValue = new CellValue((float)cellValue) };
+            case "Double":
+                return new Cell { DataType = CellValues.Number, CellValue = new CellValue((double)cellValue) };
+            case "Decimal":
+                return new Cell { DataType = CellValues.Number, CellValue = new CellValue((decimal)cellValue) };
+            default:
+                return new Cell { DataType = CellValues.String, CellValue = new CellValue(cellValue?.ToString()) };
+                //throw new ArgumentOutOfRangeException($"{cellValue.GetType().Name} type not supported");
+        }
     }
 
     // Modified save using example from https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.cellvalue?view=openxml-2.8.1

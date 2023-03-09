@@ -12,38 +12,16 @@ internal class RowProxy : Row
     public override OpenXmlElement FirstChild => Children.FirstOrDefault();
     public override bool HasChildren => Children.Any();
 
+    public Func<object, Cell> MapToCellFunc { get; set; }
+
     public void AppendCellValue(object cellValue)
     {
         _cellValues.Add(cellValue);
     }
 
-    private static List<OpenXmlElement> MapToCell(IEnumerable<object> cellValues)
+    private List<OpenXmlElement> MapToCell(IEnumerable<object> cellValues)
     {
-        return cellValues.Select(MapCell).ToList();
-    }
-
-    private static OpenXmlElement MapCell(object cellValue)
-    {
-        switch (cellValue.GetType().Name)
-        {
-            case "String":
-                return new Cell { DataType = CellValues.String, CellValue = new CellValue((string)cellValue) };
-            case "Boolean":
-                return new Cell { DataType = CellValues.Boolean, CellValue = new CellValue((bool)cellValue) };
-            case "DateTime":
-                return new Cell { DataType = CellValues.Date, CellValue = new CellValue((DateTime)cellValue), StyleIndex = 1 };
-            case "Int32":
-                return new Cell { DataType = CellValues.Number, CellValue = new CellValue((int)cellValue) };
-            case "Single":
-                return new Cell { DataType = CellValues.Number, CellValue = new CellValue((float)cellValue) };
-            case "Double":
-                return new Cell { DataType = CellValues.Number, CellValue = new CellValue((double)cellValue) };
-            case "Decimal":
-                return new Cell { DataType = CellValues.Number, CellValue = new CellValue((decimal)cellValue) };
-            default:
-                return new Cell { DataType = CellValues.String, CellValue = new CellValue(cellValue?.ToString()) };
-                //throw new ArgumentOutOfRangeException($"{cellValue.GetType().Name} type not supported");
-        }
+        return cellValues.Select(e => (OpenXmlElement)MapToCellFunc(e)).ToList();
     }
 
     public class ElementListProxy : OpenXmlElementList
