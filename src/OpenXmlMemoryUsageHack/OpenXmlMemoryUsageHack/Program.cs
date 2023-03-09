@@ -15,7 +15,7 @@ internal class Program
         //SaveXml("standard.xlsx", StandardRowGeneration);
 
         // Hacky save
-        //SaveXml("hacky.xlsx", HackyRowGeneration);
+        SaveXml("hacky.xlsx", HackyRowGeneration);
 
         Console.WriteLine("Done");
         Console.ReadKey();
@@ -39,7 +39,7 @@ internal class Program
         return openXmlRow;
     }
 
-    private static Row HackyRowGeneration(uint rowIndex, List<string> row)
+    private static Row HackyRowGeneration(uint rowIndex, List<object> row)
     {
         var openXmlRow = new RowProxy() { RowIndex = rowIndex };
         for (var i = 0; i < CellCount; i++)
@@ -53,13 +53,27 @@ internal class Program
     }
 
     // Modified save using example from https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.cellvalue?view=openxml-2.8.1
-    private static void SaveXml(string filename, Func<uint, List<string>, OpenXmlElement> generateRow)
+    private static void SaveXml(string filename, Func<uint, List<object>, OpenXmlElement> generateRow)
     {
         var spreadsheetDocument = SpreadsheetDocument.Create(filename, SpreadsheetDocumentType.Workbook);
 
         // Add a WorkbookPart to the document.
         var workbookpart = spreadsheetDocument.AddWorkbookPart();
         workbookpart.Workbook = new Workbook();
+
+        // Add minimalist styles
+        var stylesPart = workbookpart.AddNewPart<WorkbookStylesPart>();
+        stylesPart.Stylesheet = new Stylesheet
+        {
+            Fonts = new Fonts(new Font()),
+            Fills = new Fills(new Fill()),
+            Borders = new Borders(new Border()),
+            CellStyleFormats = new CellStyleFormats(new CellFormat()),
+            CellFormats =
+                new CellFormats(
+                    new CellFormat(),
+                    new CellFormat { NumberFormatId = 14, ApplyNumberFormat = true })
+        };
 
         // Add a WorksheetPart to the WorkbookPart.
         var worksheetPart = workbookpart.AddNewPart<WorksheetPart>();
@@ -97,11 +111,11 @@ internal class Program
     }
 
     // Return a string table filled with guids (to have some non repeating data)
-    private static IEnumerable<List<string>> GetData()
+    private static IEnumerable<List<object>> GetData()
     {
         for (int i = 0; i < RowCount; i++)
         {
-            var row = new List<string>();
+            var row = new List<object>();
             for (var j = 0; j < CellCount; j++)
             {
                 row.Add(Guid.NewGuid().ToString());
