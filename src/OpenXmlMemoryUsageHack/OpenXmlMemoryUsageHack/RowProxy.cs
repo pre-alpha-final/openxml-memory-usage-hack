@@ -5,25 +5,23 @@ namespace OpenXmlMemoryUsageHack;
 
 internal class RowProxy : Row
 {
-    private readonly List<string> _cellValues = new();
+    private readonly List<object> _cellValues = new();
 
     private List<OpenXmlElement> Children => MapToCell(_cellValues);
     public override OpenXmlElementList ChildElements => new ElementListProxy(() => Children);
     public override OpenXmlElement FirstChild => Children.FirstOrDefault();
     public override bool HasChildren => Children.Any();
 
-    public void AppendCellValue(string cellValue)
+    public Func<object, Cell> MapToCellFunc { get; set; }
+
+    public void AppendCellValue(object cellValue)
     {
         _cellValues.Add(cellValue);
     }
 
-    private static List<OpenXmlElement> MapToCell(IEnumerable<string> cellValues)
+    private List<OpenXmlElement> MapToCell(IEnumerable<object> cellValues)
     {
-        return cellValues.Select(e => (OpenXmlElement)new Cell
-        {
-            DataType = CellValues.String,
-            CellValue = new CellValue(e)
-        }).ToList();
+        return cellValues.Select(e => (OpenXmlElement)MapToCellFunc(e)).ToList();
     }
 
     public class ElementListProxy : OpenXmlElementList
